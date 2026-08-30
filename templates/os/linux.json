@@ -1,5 +1,5 @@
 {
-  "id": "tool/linux",
+  "id": "os/linux",
   "name": "Linux Systems & DevOps Administration",
   "version": "1.0.0",
   "description": "Comprehensive Linux curriculum from kernel architecture, FHS, and permissions (SUID/SGID/ACL) to process management, systemd, text processing (grep/sed/awk), networking, and Bash scripting",

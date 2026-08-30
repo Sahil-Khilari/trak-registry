@@ -64,6 +64,40 @@
         }
       }
     },
+    "os": {
+      "title": "Operating Systems & Administration",
+      "description": "Deep-dive OS internals, kernels, administration, and shell environments",
+      "templates": {
+        "linux": {
+          "name": "Linux Systems & Administration",
+          "description": "Linux mastery: Kernel architecture, FHS, permissions, systemd, grep/sed/awk, process signals, networking, and Bash scripting",
+          "version": "1.0.0",
+          "source": "templates/os/linux.json",
+          "tags": ["linux", "bash", "devops", "sysadmin", "systemd", "shell", "os"]
+        },
+        "windows": {
+          "name": "Windows Systems & PowerShell",
+          "description": "Windows & PowerShell mastery: NT kernel architecture, Registry, NTFS ACLs, Event Logs, WinRM remoting, WSL2, and CIM/WMI",
+          "version": "1.0.0",
+          "source": "templates/os/windows.json",
+          "tags": ["windows", "powershell", "sysadmin", "winrm", "wsl2", "registry", "os"]
+        },
+        "macos": {
+          "name": "macOS Systems & Darwin BSD",
+          "description": "macOS mastery: Darwin XNU kernel, APFS snapshots, Homebrew, launchd daemons, SIP/Gatekeeper, defaults plists, and Apple Silicon",
+          "version": "1.0.0",
+          "source": "templates/os/macos.json",
+          "tags": ["macos", "mac", "apple", "darwin", "homebrew", "zsh", "launchd", "os"]
+        },
+        "mac": {
+          "name": "macOS Systems & Darwin BSD",
+          "description": "macOS mastery: Darwin XNU kernel, APFS snapshots, Homebrew, launchd daemons, SIP/Gatekeeper, defaults plists, and Apple Silicon",
+          "version": "1.0.0",
+          "source": "templates/os/macos.json",
+          "tags": ["macos", "mac", "apple", "darwin", "homebrew", "zsh", "launchd", "os"]
+        }
+      }
+    },
     "db": {
       "title": "Databases & Storage",
       "description": "Relational, NoSQL, and caching database systems and query design",
