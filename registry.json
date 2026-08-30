@@ -9,9 +9,16 @@
         "go": {
           "name": "Go",
           "description": "Comprehensive Go fundamentals, concurrency, and hands-on exercises",
-          "version": "1.0.0",
+          "version": "1.2.0",
           "source": "templates/lang/go.json",
           "tags": ["golang", "backend", "concurrency"]
+        },
+        "rust": {
+          "name": "Rust",
+          "description": "End-to-end Rust systems programming, ownership, lifetimes, Tokio async, and Axum",
+          "version": "1.0.0",
+          "source": "templates/lang/rust.json",
+          "tags": ["rust", "systems", "concurrency", "tokio", "axum"]
         }
       }
     },
