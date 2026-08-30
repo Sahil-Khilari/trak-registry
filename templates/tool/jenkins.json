@@ -1,0 +1,44 @@
+{
+  "id": "tool/jenkins",
+  "name": "Jenkins",
+  "version": "1.0.0",
+  "description": "Jenkins CI/CD workspace with Declarative Jenkinsfiles, scripted examples, and pipeline exercises",
+  "root": {
+    "name": "jenkins-workspace",
+    "type": "directory",
+    "children": [
+      {
+        "name": "README.md",
+        "type": "file",
+        "content": "# Jenkins CI/CD Learning Track\n\nLearn continuous integration and delivery using Jenkins.\n\n## Structure\n- `01-hello-pipeline/` - Basic declarative pipeline syntax\n- `02-stages-and-steps/` - Multi-stage build, test, and deploy flow\n- `03-environment-and-credentials/` - Handling environment variables and secrets\n- `04-post-actions/` - Success, failure, and always notifications\n"
+      },
+      {
+        "name": "01-hello-pipeline",
+        "type": "directory",
+        "children": [
+          {
+            "name": "Jenkinsfile",
+            "type": "file",
+            "content": "pipeline {\n    agent any\n    stages {\n        stage('Hello') {\n            steps {\n                echo 'Hello from Trak Jenkins Pipeline!'\n            }\n        }\n    }\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 01 - Hello Pipeline\n\nUnderstand the minimal declarative Jenkinsfile structure (`pipeline`, `agent`, `stages`, `steps`).\n"
+          }
+        ]
+      },
+      {
+        "name": "02-stages-and-steps",
+        "type": "directory",
+        "children": [
+          {
+            "name": "Jenkinsfile",
+            "type": "file",
+            "content": "pipeline {\n    agent any\n    stages {\n        stage('Build') {\n            steps {\n                echo 'Building application artifacts...'\n            }\n        }\n        stage('Test') {\n            steps {\n                echo 'Running automated tests...'\n            }\n        }\n        stage('Deploy') {\n            steps {\n                echo 'Deploying to staging environment...'\n            }\n        }\n    }\n}\n"
+          }
+        ]
+      }
+    ]
+  }
+}

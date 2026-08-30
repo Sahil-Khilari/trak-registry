@@ -1,0 +1,98 @@
+{
+  "id": "lang/go",
+  "name": "Go",
+  "version": "1.0.0",
+  "description": "Go fundamentals, types, control flow, concurrency, and testing workspace",
+  "root": {
+    "name": "go-workspace",
+    "type": "directory",
+    "children": [
+      {
+        "name": "go.mod",
+        "type": "file",
+        "content": "module go-workspace\n\ngo 1.22\n"
+      },
+      {
+        "name": "README.md",
+        "type": "file",
+        "content": "# Go Learning Workspace\n\nWelcome to your local Go track initialized with `trak`.\n\n## Structure\n- `01-hello-world/` - First Go program & basic syntax\n- `02-variables-and-types/` - Primitive types, inference, and zero values\n- `03-control-flow/` - If/else, for loops, and switch cases\n- `04-structs-and-methods/` - Custom types, structs, and receiver functions\n- `05-interfaces/` - Polymorphism and Go interfaces\n- `06-concurrency/` - Goroutines, channels, and sync primitives\n\nRun your code:\n```bash\ngo run ./01-hello-world/main.go\n```\n"
+      },
+      {
+        "name": "01-hello-world",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, Trak Go Learner!\")\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 01 - Hello World\n\nUnderstand package declarations, imports, and the `main()` entrypoint.\n\n### Task\nRun the program using:\n```bash\ngo run main.go\n```\n"
+          }
+        ]
+      },
+      {
+        "name": "02-variables-and-types",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tvar name string = \"Go Developer\"\n\tage := 25\n\tvar isLearner bool = true\n\n\tfmt.Printf(\"Name: %s | Age: %d | Learner: %t\\n\", name, age, isLearner)\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 02 - Variables and Types\n\nExplore `var` vs short variable declaration `:=`, zero values, and basic types.\n"
+          }
+        ]
+      },
+      {
+        "name": "03-control-flow",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfor i := 1; i <= 5; i++ {\n\t\tif i%2 == 0 {\n\t\t\tfmt.Printf(\"%d is even\\n\", i)\n\t\t} else {\n\t\t\tfmt.Printf(\"%d is odd\\n\", i)\n\t\t}\n\t}\n}\n"
+          }
+        ]
+      },
+      {
+        "name": "04-structs-and-methods",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\ntype User struct {\n\tUsername string\n\tEmail    string\n}\n\nfunc (u User) Greet() string {\n\treturn fmt.Sprintf(\"Welcome, %s (%s)!\", u.Username, u.Email)\n}\n\nfunc main() {\n\tuser := User{Username: \"Alice\", Email: \"alice@example.com\"}\n\tfmt.Println(user.Greet())\n}\n"
+          }
+        ]
+      },
+      {
+        "name": "05-interfaces",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\ntype Notifier interface {\n\tNotify() string\n}\n\ntype EmailAlert struct {\n\tSubject string\n}\n\nfunc (e EmailAlert) Notify() string {\n\treturn \"[Email] \" + e.Subject\n}\n\nfunc SendNotification(n Notifier) {\n\tfmt.Println(n.Notify())\n}\n\nfunc main() {\n\tSendNotification(EmailAlert{Subject: \"Welcome to Interfaces!\"})\n}\n"
+          }
+        ]
+      },
+      {
+        "name": "06-concurrency",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"time\"\n)\n\nfunc worker(id int, ch chan string) {\n\ttime.Sleep(100 * time.Millisecond)\n\tch <- fmt.Sprintf(\"worker %d completed work\", id)\n}\n\nfunc main() {\n\tch := make(chan string, 3)\n\tfor i := 1; i <= 3; i++ {\n\t\tgo worker(i, ch)\n\t}\n\n\tfor i := 1; i <= 3; i++ {\n\t\tfmt.Println(<-ch)\n\t}\n}\n"
+          }
+        ]
+      }
+    ]
+  }
+}

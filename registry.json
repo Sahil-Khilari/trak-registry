@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "updated_at": "2026-08-30T12:00:00Z",
+  "categories": {
+    "lang": {
+      "title": "Programming Languages",
+      "description": "Interactive learning workspaces for programming languages",
+      "templates": {
+        "go": {
+          "name": "Go",
+          "description": "Comprehensive Go fundamentals, concurrency, and hands-on exercises",
+          "version": "1.0.0",
+          "source": "templates/lang/go.json",
+          "tags": ["golang", "backend", "concurrency"]
+        }
+      }
+    },
+    "tool": {
+      "title": "DevOps & Developer Tools",
+      "description": "Hands-on environments and labs for DevOps & engineering tools",
+      "templates": {
+        "jenkins": {
+          "name": "Jenkins",
+          "description": "Jenkins declarative pipelines, automation jobs, and CI/CD labs",
+          "version": "1.0.0",
+          "source": "templates/tool/jenkins.json",
+          "tags": ["cicd", "devops", "automation"]
+        }
+      }
+    }
+  }
+}
