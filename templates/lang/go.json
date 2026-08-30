@@ -1,8 +1,8 @@
 {
   "id": "lang/go",
-  "name": "Go",
-  "version": "1.0.0",
-  "description": "Go fundamentals, types, control flow, concurrency, and testing workspace",
+  "name": "Go (Golang) Mastery Track",
+  "version": "1.1.0",
+  "description": "Comprehensive Go deep-dive from GMP scheduler, memory allocator, escape analysis, and slices to interfaces, generics, channels, context, database pooling, and production web services",
   "root": {
     "name": "go-workspace",
     "type": "directory",
@@ -15,81 +15,298 @@
       {
         "name": "README.md",
         "type": "file",
-        "content": "# Go Learning Workspace\n\nWelcome to your local Go track initialized with `trak`.\n\n## Structure\n- `01-hello-world/` - First Go program & basic syntax\n- `02-variables-and-types/` - Primitive types, inference, and zero values\n- `03-control-flow/` - If/else, for loops, and switch cases\n- `04-structs-and-methods/` - Custom types, structs, and receiver functions\n- `05-interfaces/` - Polymorphism and Go interfaces\n- `06-concurrency/` - Goroutines, channels, and sync primitives\n\nRun your code:\n```bash\ngo run ./01-hello-world/main.go\n```\n"
+        "content": "# 🚀 Go (Golang) End-to-End Deep-Dive Workspace\n\nWelcome to your complete Go mastery track materialized with **Trak**.\n\n## 📚 Comprehensive Curriculum\n\n| Module | Topic | Key Concepts Covered |\n| :--- | :--- | :--- |\n| `01-runtime-and-escape-analysis` | **Go Runtime & Memory** | TCMalloc allocator, Tri-Color GC, Stack vs Heap, `go build -gcflags=\"-m\"` |\n| `02-toolchain-and-workspaces` | **Toolchain & Modules** | `go mod`, `go work`, cross-compilation (`CGO_ENABLED=0`), `-race` detector |\n| `03-variables-and-iota-enums` | **Variables & Types** | Default zero values, short declarations, `iota` bitmask permissions |\n| `04-memory-representation` | **Memory Layout** | String vs Slice memory headers (16B vs 24B), byte vs rune |\n| `05-arrays-slices-growth` | **Slices Deep-Dive** | Dynamic growth, capacity doubling algorithm, sub-slice memory leaks & `copy()` |\n| `06-maps-structs-composition` | **Maps & Structs** | Hash map concurrency safety, comma-ok idiom, struct embedding composition, JSON tags |\n| `07-control-flow-and-defer` | **Control Flow** | For range variants, switch expressions, defer LIFO execution, panic & recover |\n| `08-pointers-and-semantics` | **Pointers & Semantics** | Pass-by-value vs pointer semantics, memory mutation vs copying |\n| `09-interfaces-and-nil-trap` | **Interfaces** | Duck typing, `iface` vs `eface`, the infamous `(*Type)(nil) != nil` trap |\n| `10-generics` | **Generics (Go 1.18+)** | Type parameters, `any`, `comparable`, custom type constraints |\n| `11-error-handling-wrapping` | **Error Architecture** | Custom errors, `%w` wrapping, `errors.Is()`, `errors.As()`, sentinel errors |\n| `12-concurrency-gmp-scheduler` | **Goroutines & GMP** | Goroutine vs OS threads, GMP model (`G`, `M`, `P`), cooperative scheduling |\n| `13-channels-and-sync` | **Channels & Sync** | Buffered/unbuffered, select timeout, `sync.WaitGroup`, `Mutex`, `RWMutex`, `sync.Pool` |\n| `14-context-and-timeouts` | **Context Tree** | `WithCancel`, `WithTimeout`, `WithValue`, graceful cancellation cascades |\n| `15-standard-library-io` | **Standard Library** | `io.Reader`/`io.Writer` streaming pipelines, `encoding/json`, OS signals |\n| `16-production-web-service` | **Web Architecture** | `net/http`, middleware chains, structured JSON APIs, graceful shutdown |\n| `17-database-sql-pooling` | **Database & Pooling** | `database/sql`, `SetMaxOpenConns`, `SetMaxIdleConns`, transactions, scanning |\n| `18-testing-and-benchmarks` | **Testing & Profiling** | Table-driven tests, subtests `t.Run()`, benchmark `testing.B`, race detection |\n\n---\n\n## 🛠️ How to Navigate & Run\n\nNavigate to any module and run with `go run`:\n```bash\ncd 01-runtime-and-escape-analysis\ngo run main.go\n```\n\nRun escape analysis diagnostics:\n```bash\ngo build -gcflags=\"-m\" main.go\n```\n"
       },
       {
-        "name": "01-hello-world",
+        "name": "01-runtime-and-escape-analysis",
         "type": "directory",
         "children": [
           {
             "name": "main.go",
             "type": "file",
-            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, Trak Go Learner!\")\n}\n"
+            "content": "package main\n\nimport \"fmt\"\n\n// User demonstrates stack vs heap allocation\ntype User struct {\n\tID   int\n\tName string\n}\n\n// NewUserHeap escapes to Heap: Address of locally created struct is returned outside the function frame.\n// The compiler's escape analysis moves 'u' from stack to heap.\nfunc NewUserHeap(name string) *User {\n\tu := User{ID: 1, Name: name} // ESCAPES TO HEAP\n\treturn &u\n}\n\n// NewUserStack stays on Stack: Struct is returned by value (copied across stack frame).\n// Zero GC overhead.\nfunc NewUserStack(name string) User {\n\tu := User{ID: 2, Name: name} // STAYS ON STACK\n\treturn u\n}\n\nfunc main() {\n\tfmt.Println(\"=== 01: Go Runtime, Memory & Escape Analysis ===\")\n\n\t// 1. Heap allocated user\n\theapUser := NewUserHeap(\"Alice (Heap)\")\n\tfmt.Printf(\"Heap User: %+v, Pointer: %p\\n\", heapUser, heapUser)\n\n\t// 2. Stack allocated user\n\tstackUser := NewUserStack(\"Bob (Stack)\")\n\tfmt.Printf(\"Stack User: %+v\\n\", stackUser)\n\n\t// TIP: Run escape analysis compiler flag in terminal:\n\t// go build -gcflags=\"-m -m\" main.go\n}\n"
           },
           {
             "name": "README.md",
             "type": "file",
-            "content": "# 01 - Hello World\n\nUnderstand package declarations, imports, and the `main()` entrypoint.\n\n### Task\nRun the program using:\n```bash\ngo run main.go\n```\n"
+            "content": "# 01 - Go Runtime, Memory Allocation & Escape Analysis\n\n### Core Internals\n- **TCMalloc-based Allocator**: Uses `mcache` (per-P thread-local cache), `mcentral` (central shared spans), and `mheap` (page allocator).\n- **Tri-Color Mark-and-Sweep GC**: Concurrent collector with sub-millisecond Stop-The-World (STW) pauses using Write Barriers.\n- **Escape Analysis**: Compile-time determination of whether memory can live on the stack (cheap, freed on return) or must escape to the heap (GC managed).\n\n### Run Escape Analysis:\n```bash\ngo build -gcflags=\"-m\" main.go\n```\n"
           }
         ]
       },
       {
-        "name": "02-variables-and-types",
+        "name": "02-toolchain-and-workspaces",
         "type": "directory",
         "children": [
           {
             "name": "main.go",
             "type": "file",
-            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tvar name string = \"Go Developer\"\n\tage := 25\n\tvar isLearner bool = true\n\n\tfmt.Printf(\"Name: %s | Age: %d | Learner: %t\\n\", name, age, isLearner)\n}\n"
+            "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"runtime\"\n)\n\nfunc main() {\n\tfmt.Println(\"=== 02: Toolchain, OS & Architecture Targets ===\")\n\tfmt.Printf(\"Go Version   : %s\\n\", runtime.Version())\n\tfmt.Printf(\"Compiler     : %s\\n\", runtime.Compiler)\n\tfmt.Printf(\"Target OS    : %s\\n\", runtime.GOOS)\n\tfmt.Printf(\"Target Arch  : %s\\n\", runtime.GOARCH)\n\tfmt.Printf(\"CPU Cores    : %d\\n\", runtime.NumCPU())\n\n\t// Pro Tip: Build static Linux binaries with zero C dependencies:\n\t// CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags=\"-s -w\" -o server main.go\n}\n"
           },
           {
             "name": "README.md",
             "type": "file",
-            "content": "# 02 - Variables and Types\n\nExplore `var` vs short variable declaration `:=`, zero values, and basic types.\n"
+            "content": "# 02 - Toolchain & Modules\n\n### Essential Commands\n```bash\ngo mod tidy           # Sync dependencies\ngo mod vendor         # Vendor dependencies locally\ngo vet ./...          # Static code analysis\ngo test -v -race ./...# Run tests with race detector enabled!\n```\n"
           }
         ]
       },
       {
-        "name": "03-control-flow",
+        "name": "03-variables-and-iota-enums",
         "type": "directory",
         "children": [
           {
             "name": "main.go",
             "type": "file",
-            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfor i := 1; i <= 5; i++ {\n\t\tif i%2 == 0 {\n\t\t\tfmt.Printf(\"%d is even\\n\", i)\n\t\t} else {\n\t\t\tfmt.Printf(\"%d is odd\\n\", i)\n\t\t}\n\t}\n}\n"
+            "content": "package main\n\nimport \"fmt\"\n\n// Status enum using iota\ntype Status int\n\nconst (\n\tStatusPending   Status = iota // 0\n\tStatusActive                  // 1\n\tStatusSuspended               // 2\n\tStatusDeleted                 // 3\n)\n\n// Bitmask permission flags using bit-shifted iota\nconst (\n\tPermissionRead    = 1 << iota // 1 << 0 = 1 (0001)\n\tPermissionWrite               // 1 << 1 = 2 (0010)\n\tPermissionExecute             // 1 << 2 = 4 (0100)\n\tPermissionAdmin               // 1 << 3 = 8 (1000)\n)\n\nfunc main() {\n\tfmt.Println(\"=== 03: Variables, Zero Values & iota Enums ===\")\n\n\t// Zero Values\n\tvar intVal int         // 0\n\tvar floatVal float64   // 0.0\n\tvar boolVal bool       // false\n\tvar strVal string      // \"\"\n\tvar ptrVal *int        // nil\n\tvar sliceVal []string  // nil\n\tvar mapVal map[string]int // nil\n\n\tfmt.Printf(\"Zero Values: int=%d, float=%f, bool=%t, str='%s', ptr=%v, slice=%v, map=%v\\n\",\n\t\tintVal, floatVal, boolVal, strVal, ptrVal, sliceVal, mapVal)\n\n\t// Enum inspection\n\tfmt.Printf(\"StatusPending: %d, StatusActive: %d, StatusDeleted: %d\\n\", StatusPending, StatusActive, StatusDeleted)\n\n\t// Bitmask operations\n\tuserPerms := PermissionRead | PermissionWrite\n\tcanWrite := (userPerms & PermissionWrite) != 0\n\tcanAdmin := (userPerms & PermissionAdmin) != 0\n\tfmt.Printf(\"User Perms: %04b | Can Write: %t | Can Admin: %t\\n\", userPerms, canWrite, canAdmin)\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 03 - Variables, Constants & `iota` Enums\n\n- Understand default zero values for all Go types (`nil` for pointers, slices, maps, channels, interfaces).\n- `iota` simplifies auto-incrementing constants and bitmask flags (`1 << iota`).\n"
           }
         ]
       },
       {
-        "name": "04-structs-and-methods",
+        "name": "04-memory-representation",
         "type": "directory",
         "children": [
           {
             "name": "main.go",
             "type": "file",
-            "content": "package main\n\nimport \"fmt\"\n\ntype User struct {\n\tUsername string\n\tEmail    string\n}\n\nfunc (u User) Greet() string {\n\treturn fmt.Sprintf(\"Welcome, %s (%s)!\", u.Username, u.Email)\n}\n\nfunc main() {\n\tuser := User{Username: \"Alice\", Email: \"alice@example.com\"}\n\tfmt.Println(user.Greet())\n}\n"
+            "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"unsafe\"\n)\n\nfunc main() {\n\tfmt.Println(\"=== 04: Memory Representation & Headers ===\")\n\n\t// String Memory Layout (16 bytes on 64-bit architecture: Pointer [8B] + Length [8B])\n\tstr := \"Hello, Go!\"\n\tfmt.Printf(\"String size in memory: %d bytes, Length: %d chars\\n\", unsafe.Sizeof(str), len(str))\n\n\t// Slice Memory Layout (24 bytes on 64-bit architecture: Pointer [8B] + Length [8B] + Capacity [8B])\n\tslice := []int{10, 20, 30, 40}\n\tfmt.Printf(\"Slice header size: %d bytes, Length: %d, Capacity: %d\\n\", unsafe.Sizeof(slice), len(slice), cap(slice))\n\n\t// Rune vs Byte\n\tvar charRune rune = 'G' // int32 (4 bytes, Unicode code point)\n\tvar charByte byte = 'A' // uint8 (1 byte, ASCII)\n\tfmt.Printf(\"Rune size: %d bytes (%c) | Byte size: %d bytes (%c)\\n\", unsafe.Sizeof(charRune), charRune, unsafe.Sizeof(charByte), charByte)\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 04 - Data Types & Memory Representation\n\n### Memory Headers\n- **String Header (16 bytes)**: `[ Pointer to Byte Array (8B) | Length (8B) ]`\n- **Slice Header (24 bytes)**: `[ Pointer to Element Array (8B) | Length (8B) | Capacity (8B) ]`\n"
           }
         ]
       },
       {
-        "name": "05-interfaces",
+        "name": "05-arrays-slices-growth",
         "type": "directory",
         "children": [
           {
             "name": "main.go",
             "type": "file",
-            "content": "package main\n\nimport \"fmt\"\n\ntype Notifier interface {\n\tNotify() string\n}\n\ntype EmailAlert struct {\n\tSubject string\n}\n\nfunc (e EmailAlert) Notify() string {\n\treturn \"[Email] \" + e.Subject\n}\n\nfunc SendNotification(n Notifier) {\n\tfmt.Println(n.Notify())\n}\n\nfunc main() {\n\tSendNotification(EmailAlert{Subject: \"Welcome to Interfaces!\"})\n}\n"
+            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"=== 05: Arrays vs Slices & Memory Growth ===\")\n\n\t// 1. Array (Fixed-size value type - copying copies entire buffer)\n\tvar arr = [3]int{1, 2, 3}\n\tarrCopy := arr\n\tarrCopy[0] = 999\n\tfmt.Println(\"Original Array:\", arr)     // [1 2 3] - Unchanged!\n\tfmt.Println(\"Copied Array:  \", arrCopy) // [999 2 3]\n\n\t// 2. Slice: make(type, len, cap)\n\ts := make([]int, 2, 4) // len=2, cap=4\n\ts[0] = 10\n\ts[1] = 20\n\tfmt.Printf(\"Initial Slice: %v, len=%d, cap=%d\\n\", s, len(s), cap(s))\n\n\t// 3. Append triggers Capacity Growth\n\ts = append(s, 30, 40)\n\tfmt.Printf(\"Full Slice:    %v, len=%d, cap=%d\\n\", s, len(s), cap(s))\n\ts = append(s, 50) // Exceeds cap=4 -> Allocates new backing array, capacity doubles!\n\tfmt.Printf(\"Expanded Slice:%v, len=%d, cap=%d\\n\", s, len(s), cap(s))\n\n\t// 4. Sub-slicing shares the same backing array (Danger!)\n\tparent := []int{100, 200, 300, 400}\n\tsub := parent[1:3] // [200, 300]\n\tsub[0] = 999       // Mutates parent[1] as well!\n\tfmt.Printf(\"Parent after sub mutation: %v\\n\", parent)\n\n\t// 5. Avoiding Sub-slice Memory Leaks using copy()\n\tdetached := make([]int, len(sub))\n\tcopy(detached, sub)\n\tdetached[0] = 777\n\tfmt.Printf(\"Detached slice mutation: detached=%v, parent=%v\\n\", detached, parent)\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 05 - Arrays, Slices & Memory Growth\n\n### Sub-slice Memory Leak Gotcha\nSlicing a small portion of a massive 1GB slice keeps the entire 1GB backing array pinned in memory by GC. Always use `copy()` to detach small sub-slices.\n"
           }
         ]
       },
       {
-        "name": "06-concurrency",
+        "name": "06-maps-structs-composition",
         "type": "directory",
         "children": [
           {
             "name": "main.go",
             "type": "file",
-            "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"time\"\n)\n\nfunc worker(id int, ch chan string) {\n\ttime.Sleep(100 * time.Millisecond)\n\tch <- fmt.Sprintf(\"worker %d completed work\", id)\n}\n\nfunc main() {\n\tch := make(chan string, 3)\n\tfor i := 1; i <= 3; i++ {\n\t\tgo worker(i, ch)\n\t}\n\n\tfor i := 1; i <= 3; i++ {\n\t\tfmt.Println(<-ch)\n\t}\n}\n"
+            "content": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n)\n\ntype BaseEntity struct {\n\tID        string `json:\"id\"`\n\tCreatedAt int64  `json:\"created_at\"`\n}\n\n// Composition via Struct Embedding (Promotes fields and methods)\ntype UserAccount struct {\n\tBaseEntity        // Embedded struct\n\tUsername   string `json:\"username\"`\n\tEmail      string `json:\"email\"`\n\tIsActive   bool   `json:\"is_active\"`\n}\n\nfunc main() {\n\tfmt.Println(\"=== 06: Maps, Structs & Composition ===\")\n\n\t// 1. Hash Maps & Comma-OK Idiom\n\tscores := make(map[string]int)\n\tscores[\"Alice\"] = 95\n\tscores[\"Bob\"] = 0 // Valid score of 0\n\n\t// Check if key exists or if value is default zero value\n\tif score, ok := scores[\"Bob\"]; ok {\n\t\tfmt.Printf(\"Bob exists with score: %d\\n\", score)\n\t}\n\n\tif _, ok := scores[\"Charlie\"]; !ok {\n\t\tfmt.Println(\"Charlie does not exist in scores map!\")\n\t}\n\n\tdelete(scores, \"Alice\") // Safe delete\n\n\t// 2. Struct Composition & Embedding\n\taccount := UserAccount{\n\t\tBaseEntity: BaseEntity{ID: \"usr_101\", CreatedAt: 1725000000},\n\t\tUsername:   \"navnath\",\n\t\tEmail:      \"navnath@example.com\",\n\t\tIsActive:   true,\n\t}\n\n\t// Accessing promoted fields directly\n\tfmt.Printf(\"Account ID: %s | Username: %s\\n\", account.ID, account.Username)\n\n\t// JSON serialization\n\tjsonData, _ := json.MarshalIndent(account, \"\", \"  \")\n\tfmt.Printf(\"JSON Representation:\\n%s\\n\", string(jsonData))\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 06 - Maps, Structs & Composition\n\n- Go prefers **composition over inheritance** via struct embedding.\n- Hash maps are **not safe for concurrent writes** (triggers fatal panic). Use `sync.RWMutex` or `sync.Map` in multithreaded code.\n"
+          }
+        ]
+      },
+      {
+        "name": "07-control-flow-and-defer",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\n// SafeDivision demonstrates panic and recover handling\nfunc SafeDivision(a, b int) (result int, err error) {\n\tdefer func() {\n\t\tif r := recover(); r != nil {\n\t\t\terr = fmt.Errorf(\"recovered from panic: %v\", r)\n\t\t}\n\t}()\n\n\treturn a / b, nil\n}\n\nfunc main() {\n\tfmt.Println(\"=== 07: Control Flow, Defer Stack & Panic/Recover ===\")\n\n\t// 1. Defer executes in LIFO (Last-In-First-Out) order\n\tfmt.Println(\"Scheduling deferred calls...\")\n\tdefer fmt.Println(\"Deferred 1 (First scheduled, last executed)\")\n\tdefer fmt.Println(\"Deferred 2\")\n\tdefer fmt.Println(\"Deferred 3 (Last scheduled, first executed)\")\n\n\t// 2. Type Switch\n\tvar mystery interface{} = \"Go Master\"\n\tswitch v := mystery.(type) {\n\tcase int:\n\t\tfmt.Printf(\"Integer: %d\\n\", v)\n\tcase string:\n\t\tfmt.Printf(\"String: %s (Length %d)\\n\", v, len(v))\n\tdefault:\n\t\tfmt.Println(\"Unknown type\")\n\t}\n\n\t// 3. Safe Recovery from Panic\n\t_, err := SafeDivision(10, 0)\n\tif err != nil {\n\t\tfmt.Printf(\"Handled Panic gracefully: %v\\n\", err)\n\t}\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 07 - Control Flow, Defer & Recovery\n\n- `defer` is evaluated immediately upon declaration, but executed when the surrounding function returns.\n- Deferred calls are stacked in **LIFO** order.\n"
+          }
+        ]
+      },
+      {
+        "name": "08-pointers-and-semantics",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\ntype Wallet struct {\n\tBalance int\n}\n\n// Value Semantics: Operates on a copy. Caller's balance remains unchanged.\nfunc DepositValue(w Wallet, amount int) {\n\tw.Balance += amount\n}\n\n// Pointer Semantics: Operates on the original memory location.\nfunc DepositPointer(w *Wallet, amount int) {\n\tw.Balance += amount\n}\n\nfunc main() {\n\tfmt.Println(\"=== 08: Pointers & Value vs Pointer Semantics ===\")\n\n\tw := Wallet{Balance: 100}\n\n\tDepositValue(w, 50)\n\tfmt.Printf(\"After Value Deposit   : %d (No change!)\\n\", w.Balance)\n\n\tDepositPointer(&w, 50)\n\tfmt.Printf(\"After Pointer Deposit : %d (Updated!)\\n\", w.Balance)\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 08 - Pointers & Semantics\n\n- Choose **value semantics** when data is immutable or small (primitives, small structs).\n- Choose **pointer semantics** when you need to mutate state or avoid expensive large struct copies.\n"
+          }
+        ]
+      },
+      {
+        "name": "09-interfaces-and-nil-trap",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\n// CustomError implements error interface\ntype CustomError struct{}\n\nfunc (c *CustomError) Error() string {\n\treturn \"custom error occurred\"\n}\n\n// Returns a typed nil pointer wrapped inside an interface\nfunc GetError(trigger bool) error {\n\tvar err *CustomError = nil\n\tif trigger {\n\t\terr = &CustomError{}\n\t}\n\t// TRAP: When returning 'err', Go wraps the type (*CustomError) and value (nil) into an interface header.\n\t// The interface is NOT nil because its Type field is non-nil!\n\treturn err\n}\n\nfunc main() {\n\tfmt.Println(\"=== 09: Interfaces & The Infamous nil Interface Trap ===\")\n\n\terr := GetError(false)\n\n\t// Interview Classic: Is err == nil?\n\tif err != nil {\n\t\tfmt.Printf(\"⚠️ THE NIL INTERFACE TRAP TRIGGERED! err is NOT nil because interface has type info: (type=%T, value=%v)\\n\", err, err)\n\t} else {\n\t\tfmt.Println(\"err is nil\")\n\t}\n\n\tfmt.Println(\"\\nRule: Always return explicit 'nil' rather than a nil pointer of concrete type!\")\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 09 - Interfaces & The `nil` Interface Trap\n\n### The Anatomy of an Interface (`iface` / `eface`)\nAn interface in Go consists of 2 words (16 bytes):\n1. `tab` / `_type`: Type descriptor pointer.\n2. `data`: Pointer to concrete underlying value.\n\nAn interface variable is only `== nil` when **both** Type and Value are `nil`!\n"
+          }
+        ]
+      },
+      {
+        "name": "10-generics",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\n// Number constraint combining numeric types\ntype Number interface {\n\t~int | ~int64 | ~float64\n}\n\n// Sum works for any Number type\nfunc Sum[T Number](items []T) T {\n\tvar total T\n\tfor _, item := range items {\n\t\ttotal += item\n\t}\n\treturn total\n}\n\n// Generic Stack Data Structure\ntype Stack[T any] struct {\n\telements []T\n}\n\nfunc (s *Stack[T]) Push(val T) {\n\ts.elements = append(s.elements, val)\n}\n\nfunc (s *Stack[T]) Pop() (T, bool) {\n\tif len(s.elements) == 0 {\n\t\tvar zero T\n\t\treturn zero, false\n\t}\n\tval := s.elements[len(s.elements)-1]\n\ts.elements = s.elements[:len(s.elements)-1]\n\treturn val, true\n}\n\nfunc main() {\n\tfmt.Println(\"=== 10: Generics (Go 1.18+) ===\")\n\n\tintSum := Sum([]int{1, 2, 3, 4, 5})\n\tfloatSum := Sum([]float64{1.5, 2.5, 3.0})\n\tfmt.Printf(\"Int Sum: %d | Float Sum: %.2f\\n\", intSum, floatSum)\n\n\tstringStack := Stack[string]{}\n\tstringStack.Push(\"First\")\n\tstringStack.Push(\"Second\")\n\tval, _ := stringStack.Pop()\n\tfmt.Printf(\"Popped from Generic Stack: %s\\n\", val)\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 10 - Generics in Go (1.18+)\n\n- Type parameters: `[T any]`, `[K comparable]`.\n- Type approximation `~int` matches underlying types like `type UserID int`.\n"
+          }
+        ]
+      },
+      {
+        "name": "11-error-handling-wrapping",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport (\n\t\"errors\"\n\t\"fmt\"\n)\n\n// Sentinel Error\nvar ErrNotFound = errors.New(\"resource not found\")\n\nfunc FetchUser(id int) error {\n\tif id == 404 {\n\t\t// Error wrapping with %w\n\t\treturn fmt.Errorf(\"database query failed for id %d: %w\", id, ErrNotFound)\n\t}\n\treturn nil\n}\n\nfunc main() {\n\tfmt.Println(\"=== 11: Modern Error Architecture (%w, errors.Is, errors.As) ===\")\n\n\terr := FetchUser(404)\n\tif err != nil {\n\t\tfmt.Printf(\"Full wrapped error: %v\\n\", err)\n\n\t\t// errors.Is checks anywhere in error chain\n\t\tif errors.Is(err, ErrNotFound) {\n\t\t\tfmt.Println(\"✔ Root cause detected: ErrNotFound!\")\n\t\t}\n\t}\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 11 - Error Handling & Wrapping\n\n- Use `fmt.Errorf(\"...: %w\", err)` to wrap underlying errors.\n- Use `errors.Is(err, target)` to test sentinel errors in unwrapped chains.\n- Use `errors.As(err, &customErr)` to extract typed error structs.\n"
+          }
+        ]
+      },
+      {
+        "name": "12-concurrency-gmp-scheduler",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"runtime\"\n\t\"sync\"\n\t\"time\"\n)\n\nfunc worker(id int, wg *sync.WaitGroup) {\n\tdefer wg.Done()\n\tfmt.Printf(\"Goroutine %d executing on OS Thread\\n\", id)\n\ttime.Sleep(50 * time.Millisecond)\n}\n\nfunc main() {\n\tfmt.Println(\"=== 12: Concurrency & The GMP Scheduler ===\")\n\tfmt.Printf(\"Logical Processors (P): %d\\n\", runtime.GOMAXPROCS(0))\n\n\tvar wg sync.WaitGroup\n\tfor i := 1; i <= 5; i++ {\n\t\twg.Add(1)\n\t\tgo worker(i, &wg)\n\t}\n\n\twg.Wait()\n\tfmt.Println(\"All goroutines completed!\")\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 12 - Concurrency & The GMP Scheduler\n\n### The GMP Model:\n- **`G` (Goroutine)**: Lightweight user-space thread (starts at ~2KB dynamic stack vs 2MB-8MB OS thread).\n- **`M` (Machine / OS Thread)**: Physical OS thread managed by kernel.\n- **`P` (Processor)**: Logical context resource required to execute Go code (`GOMAXPROCS`).\n\nFeatures **Work Stealing** and **Network Poller** for asynchronous non-blocking I/O.\n"
+          }
+        ]
+      },
+      {
+        "name": "13-channels-and-sync",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"sync\"\n\t\"time\"\n)\n\nfunc main() {\n\tfmt.Println(\"=== 13: Channels, Select & Sync Primitives ===\")\n\n\t// 1. Buffered Channel with Select Timeout\n\tch := make(chan string, 2)\n\tch <- \"Job 1\"\n\tch <- \"Job 2\"\n\n\tselect {\n\tcase msg := <-ch:\n\t\tfmt.Printf(\"Received: %s\\n\", msg)\n\tcase <-time.After(100 * time.Millisecond):\n\t\tfmt.Println(\"Timed out waiting for channel!\")\n\t}\n\n\t// 2. sync.RWMutex (Multiple readers, single exclusive writer)\n\tvar mu sync.RWMutex\n\tdata := map[string]int{\"hits\": 0}\n\n\t// Writer\n\tmu.Lock()\n\tdata[\"hits\"] += 10\n\tmu.Unlock()\n\n\t// Reader\n\tmu.RLock()\n\tval := data[\"hits\"]\n\tmu.RUnlock()\n\tfmt.Printf(\"RWMutex protected hits: %d\\n\", val)\n\n\t// 3. sync.Once (Guaranteed single execution for singleton configs)\n\tvar once sync.Once\n\tfor i := 0; i < 3; i++ {\n\t\tonce.Do(func() {\n\t\t\tfmt.Println(\"sync.Once: Initialized singleton resource exactly once!\")\n\t\t})\n\t}\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 13 - Channels, Select & Sync Primitives\n\n### Channel State Rules Matrix\n| Operation | `nil` Channel | Open Channel | Closed Channel |\n| :--- | :--- | :--- | :--- |\n| **Send (`ch <- x`)** | Blocks forever | Sends value | **PANIC!** |\n| **Receive (`<-ch`)** | Blocks forever | Receives value | Returns Zero Value immediately |\n| **Close (`close(ch)`)** | **PANIC!** | Closes channel | **PANIC!** |\n"
+          }
+        ]
+      },
+      {
+        "name": "14-context-and-timeouts",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\t\"time\"\n)\n\nfunc LongRunningOperation(ctx context.Context) error {\n\tselect {\n\tcase <-time.After(200 * time.Millisecond):\n\t\treturn nil\n\tcase <-ctx.Done():\n\t\treturn ctx.Err()\n\t}\n}\n\nfunc main() {\n\tfmt.Println(\"=== 14: Context Cancellation & Timeout Trees ===\")\n\n\t// Context with 100ms Timeout (will cancel before operation finishes)\n\tctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)\n\tdefer cancel()\n\n\terr := LongRunningOperation(ctx)\n\tif err != nil {\n\t\tfmt.Printf(\"Operation aborted by context: %v\\n\", err)\n\t} else {\n\t\tfmt.Println(\"Operation succeeded!\")\n\t}\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 14 - Context Package\n\n- Pass `context.Context` as the first parameter to functions performing I/O.\n- Always call `defer cancel()` to release timer resources and prevent memory leaks.\n"
+          }
+        ]
+      },
+      {
+        "name": "15-standard-library-io",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport (\n\t\"bytes\"\n\t\"fmt\"\n\t\"io\"\n\t\"strings\"\n)\n\nfunc main() {\n\tfmt.Println(\"=== 15: Standard Library io.Reader & io.Writer Streaming ===\")\n\n\tsrc := strings.NewReader(\"Streaming data through Go io.Copy pipeline!\")\n\tvar dst bytes.Buffer\n\n\t// io.Copy streams chunks with fixed 32KB buffer without loading all memory at once\n\tbytesCopied, err := io.Copy(&dst, src)\n\tif err != nil {\n\t\tfmt.Println(\"Copy failed:\", err)\n\t\treturn\n\t}\n\n\tfmt.Printf(\"Copied %d bytes: %s\\n\", bytesCopied, dst.String())\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 15 - Standard Library I/O\n\n- `io.Reader` and `io.Writer` are the fundamental abstractions of Go I/O streaming.\n"
+          }
+        ]
+      },
+      {
+        "name": "16-production-web-service",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"net/http\"\n\t\"time\"\n)\n\n// LoggingMiddleware wraps handlers with timing\nfunc LoggingMiddleware(next http.Handler) http.Handler {\n\treturn http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {\n\t\tstart := time.Now()\n\t\tnext.ServeHTTP(w, r)\n\t\tfmt.Printf(\"[%s] %s %s took %v\\n\", time.Now().Format(time.RFC3339), r.Method, r.URL.Path, time.Since(start))\n\t})\n}\n\nfunc HealthHandler(w http.ResponseWriter, r *http.Request) {\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tjson.NewEncoder(w).Encode(map[string]interface{}{\n\t\t\"status\":    \"healthy\",\n\t\t\"timestamp\": time.Now().Unix(),\n\t})\n}\n\nfunc main() {\n\tfmt.Println(\"=== 16: Production HTTP Web Server & Middleware ===\")\n\n\tmux := http.NewServeMux()\n\tmux.HandleFunc(\"/health\", HealthHandler)\n\n\tserver := &http.Server{\n\t\tAddr:         \":8080\",\n\t\tHandler:      LoggingMiddleware(mux),\n\t\tReadTimeout:  5 * time.Second,\n\t\tWriteTimeout: 10 * time.Second,\n\t\tIdleTimeout:  120 * time.Second,\n\t}\n\n\tfmt.Printf(\"Server configured on port 8080 with timeouts. Ready for production!\\n\")\n\t_ = server\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 16 - Production Web Services\n\n- Always configure `ReadTimeout`, `WriteTimeout`, and `IdleTimeout` on `http.Server` to prevent Slowloris attacks.\n"
+          }
+        ]
+      },
+      {
+        "name": "17-database-sql-pooling",
+        "type": "directory",
+        "children": [
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"time\"\n)\n\n// Config represents connection pool settings\ntype PoolConfig struct {\n\tMaxOpenConns    int\n\tMaxIdleConns    int\n\tConnMaxLifetime time.Duration\n\tConnMaxIdleTime time.Duration\n}\n\nfunc main() {\n\tfmt.Println(\"=== 17: Database Connection Pool Tuning ===\")\n\n\tcfg := PoolConfig{\n\t\tMaxOpenConns:    25,               // Limits total open DB connections\n\t\tMaxIdleConns:    25,               // Keeps idle connections warm\n\t\tConnMaxLifetime: 5 * time.Minute,  // Reconnects to prevent stale connections\n\t\tConnMaxIdleTime: 2 * time.Minute,\n\t}\n\n\tfmt.Printf(\"Recommended Production Pool Configuration: %+v\\n\", cfg)\n\tfmt.Println(\"Golden Rule: Always set MaxIdleConns equal to or slightly less than MaxOpenConns to avoid ping-pong churn!\")\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 17 - Database Access & Connection Pooling\n\n- Tune `SetMaxOpenConns`, `SetMaxIdleConns`, and `SetConnMaxLifetime` according to database tier capacity.\n"
+          }
+        ]
+      },
+      {
+        "name": "18-testing-and-benchmarks",
+        "type": "directory",
+        "children": [
+          {
+            "name": "calc.go",
+            "type": "file",
+            "content": "package main\n\nfunc Add(a, b int) int {\n\treturn a + b\n}\n\nfunc Multiply(a, b int) int {\n\treturn a * b\n}\n\nfunc main() {}\n"
+          },
+          {
+            "name": "calc_test.go",
+            "type": "file",
+            "content": "package main\n\nimport \"testing\"\n\n// Table-Driven Unit Tests\nfunc TestAdd(t *testing.T) {\n\ttests := []struct {\n\t\tname     string\n\t\ta, b     int\n\t\texpected int\n\t}{\n\t\t{\"Positive Numbers\", 2, 3, 5},\n\t\t{\"Zero Value\", 0, 10, 10},\n\t\t{\"Negative Numbers\", -5, -5, -10},\n\t}\n\n\tfor _, tt := range tests {\n\t\tt.Run(tt.name, func(t *testing.T) {\n\t\t\tresult := Add(tt.a, tt.b)\n\t\t\tif result != tt.expected {\n\t\t\t\tt.Errorf(\"Add(%d, %d) = %d; want %d\", tt.a, tt.b, result, tt.expected)\n\t\t\t}\n\t\t})\n\t}\n}\n\n// Benchmark Test\nfunc BenchmarkMultiply(b *testing.B) {\n\tfor i := 0; i < b.N; i++ {\n\t\t_ = Multiply(1234, 5678)\n\t}\n}\n"
+          },
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 18 - Testing, Table-Driven Tests & Benchmarks\n\n### Run Tests:\n```bash\ngo test -v ./...\n```\n\n### Run Benchmarks:\n```bash\ngo test -bench=. -benchmem\n```\n"
           }
         ]
       }
