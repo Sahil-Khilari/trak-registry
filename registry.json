@@ -19,6 +19,34 @@
           "version": "1.0.0",
           "source": "templates/lang/rust.json",
           "tags": ["rust", "systems", "concurrency", "tokio", "axum"]
+        },
+        "python": {
+          "name": "Python",
+          "description": "Comprehensive Python track: CPython internals, GIL, OOP, Pydantic, Asyncio, and FastAPI",
+          "version": "1.0.0",
+          "source": "templates/lang/python.json",
+          "tags": ["python", "backend", "fastapi", "asyncio", "pydantic"]
+        },
+        "typescript": {
+          "name": "TypeScript",
+          "description": "TypeScript mastery: strict tsconfig, discriminated unions, conditional types, infer, Zod, and fullstack typing",
+          "version": "1.0.0",
+          "source": "templates/lang/typescript.json",
+          "tags": ["typescript", "frontend", "backend", "types", "zod"]
+        },
+        "javascript": {
+          "name": "JavaScript",
+          "description": "JavaScript deep-dive: V8 internals, event loop, closures, prototypes, async, Proxy/Reflect, and modern ES2024+",
+          "version": "1.0.0",
+          "source": "templates/lang/javascript.json",
+          "tags": ["javascript", "v8", "web", "frontend", "backend", "node"]
+        },
+        "cpp": {
+          "name": "C++",
+          "description": "Modern C++ (C++20/C++23): Memory layout, RAII, Move Semantics, Vtables, Concepts, and Concurrency",
+          "version": "1.0.0",
+          "source": "templates/lang/cpp.json",
+          "tags": ["cpp", "cplusplus", "systems", "memory", "concurrency", "cmake"]
         }
       }
     },
