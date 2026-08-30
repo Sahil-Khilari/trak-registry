@@ -74,6 +74,13 @@
           "version": "1.0.0",
           "source": "templates/db/sql.json",
           "tags": ["sql", "rdbms", "postgres", "sqlite", "indexing", "transactions"]
+        },
+        "redis": {
+          "name": "Redis & In-Memory Storage",
+          "description": "Redis mastery: Event loop, data structures, Streams, RDB/AOF persistence, Sentinel HA, Cluster sharding, and caching design",
+          "version": "1.0.0",
+          "source": "templates/db/redis.json",
+          "tags": ["redis", "cache", "nosql", "in-memory", "streams", "pubsub"]
         }
       }
     },
@@ -81,12 +88,33 @@
       "title": "DevOps & Developer Tools",
       "description": "Hands-on environments and labs for DevOps & engineering tools",
       "templates": {
-        "jenkins": {
-          "name": "Jenkins",
-          "description": "Jenkins declarative pipelines, automation jobs, and CI/CD labs",
+        "docker": {
+          "name": "Docker & Container Architecture",
+          "description": "Complete Docker: Namespaces, cgroups, Overlay2, multi-stage builds, Compose, networking, BuildKit, and security hardening",
           "version": "1.0.0",
+          "source": "templates/tool/docker.json",
+          "tags": ["docker", "containers", "devops", "compose", "buildkit", "security"]
+        },
+        "k8s": {
+          "name": "Kubernetes & Cloud-Native",
+          "description": "Kubernetes mastery (CKA/CKAD): Control plane, Pods, Deployments, Services, Ingress, StatefulSets, RBAC, Helm, and Operators",
+          "version": "1.0.0",
+          "source": "templates/tool/k8s.json",
+          "tags": ["kubernetes", "k8s", "devops", "cloud-native", "helm", "cka"]
+        },
+        "jenkins": {
+          "name": "Jenkins CI/CD Automation",
+          "description": "Jenkins mastery: Declarative/Scripted pipelines, Docker builds, Shared Libraries, K8s dynamic agents, and JCasC",
+          "version": "1.2.0",
           "source": "templates/tool/jenkins.json",
-          "tags": ["cicd", "devops", "automation"]
+          "tags": ["jenkins", "cicd", "devops", "automation", "groovy", "pipeline"]
+        },
+        "terraform": {
+          "name": "Terraform & Infrastructure as Code",
+          "description": "Terraform mastery: HCL syntax, state locking, S3/DynamoDB backends, reusable modules, import blocks, and native testing",
+          "version": "1.0.0",
+          "source": "templates/tool/terraform.json",
+          "tags": ["terraform", "iac", "devops", "cloud", "opentofu", "aws"]
         }
       }
     }
