@@ -98,6 +98,19 @@
         }
       }
     },
+    "cloud": {
+      "title": "Cloud Infrastructure & Platforms",
+      "description": "Public cloud platforms, global networking, serverless, and cloud solutions architecture",
+      "templates": {
+        "aws": {
+          "name": "AWS Cloud Architecture & Solutions",
+          "description": "Complete AWS: IAM, VPC networking, EC2/ALB/ASG, S3/EBS, Aurora/DynamoDB, Serverless Lambda, ECS/Fargate, and FinOps",
+          "version": "1.0.0",
+          "source": "templates/cloud/aws.json",
+          "tags": ["aws", "cloud", "devops", "serverless", "lambda", "vpc", "finops"]
+        }
+      }
+    },
     "db": {
       "title": "Databases & Storage",
       "description": "Relational, NoSQL, and caching database systems and query design",
@@ -108,6 +121,13 @@
           "version": "1.0.0",
           "source": "templates/db/sql.json",
           "tags": ["sql", "rdbms", "postgres", "sqlite", "indexing", "transactions"]
+        },
+        "postgres": {
+          "name": "PostgreSQL Architecture & DBA",
+          "description": "PostgreSQL mastery: MVCC, JSONB, GIN/BRIN indexes, EXPLAIN BUFFERS, Autovacuum tuning, Streaming Replication, and PITR",
+          "version": "1.0.0",
+          "source": "templates/db/postgres.json",
+          "tags": ["postgres", "postgresql", "rdbms", "jsonb", "dba", "mvcc", "sql"]
         },
         "redis": {
           "name": "Redis & In-Memory Storage",
@@ -122,6 +142,13 @@
       "title": "DevOps & Developer Tools",
       "description": "Hands-on environments and labs for DevOps & engineering tools",
       "templates": {
+        "git": {
+          "name": "Git & Version Control Engineering",
+          "description": "Complete Git: Object internals (Blobs, Trees, Commits), Three Trees, interactive rebase, Worktrees, Reflog, Bisect, and Trunk-Based workflows",
+          "version": "1.0.0",
+          "source": "templates/tool/git.json",
+          "tags": ["git", "vcs", "github", "version-control", "rebase", "worktrees"]
+        },
         "docker": {
           "name": "Docker & Container Architecture",
           "description": "Complete Docker: Namespaces, cgroups, Overlay2, multi-stage builds, Compose, networking, BuildKit, and security hardening",
@@ -149,6 +176,13 @@
           "version": "1.0.0",
           "source": "templates/tool/terraform.json",
           "tags": ["terraform", "iac", "devops", "cloud", "opentofu", "aws"]
+        },
+        "ansible": {
+          "name": "Ansible Automation & Config Management",
+          "description": "Ansible mastery: Agentless architecture, Playbooks, Jinja2 templates, Ansible Vault, custom Roles, Collections, and Molecule testing",
+          "version": "1.0.0",
+          "source": "templates/tool/ansible.json",
+          "tags": ["ansible", "automation", "devops", "iac", "configuration-management", "yaml"]
         }
       }
     }
