@@ -47,6 +47,33 @@
           "version": "1.0.0",
           "source": "templates/lang/cpp.json",
           "tags": ["cpp", "cplusplus", "systems", "memory", "concurrency", "cmake"]
+        },
+        "c": {
+          "name": "C",
+          "description": "C Systems & Low-Level Architecture: Memory layout, pointers, dynamic heap, struct padding, pthreads, and bit manipulation",
+          "version": "1.0.0",
+          "source": "templates/lang/c.json",
+          "tags": ["c", "systems", "pointers", "memory", "low-level", "pthreads"]
+        },
+        "java": {
+          "name": "Java",
+          "description": "Java & JVM Enterprise Architecture: Memory regions, Garbage Collection, Records, Sealed Classes, Virtual Threads, and Spring Boot 3",
+          "version": "1.0.0",
+          "source": "templates/lang/java.json",
+          "tags": ["java", "jvm", "spring-boot", "virtual-threads", "enterprise"]
+        }
+      }
+    },
+    "db": {
+      "title": "Databases & Storage",
+      "description": "Relational, NoSQL, and caching database systems and query design",
+      "templates": {
+        "sql": {
+          "name": "SQL & Relational Databases",
+          "description": "Comprehensive SQL: Schema design, CRUD, Joins, CTEs, Window Functions, B-Tree Indexes, EXPLAIN ANALYZE, and ACID Transactions",
+          "version": "1.0.0",
+          "source": "templates/db/sql.json",
+          "tags": ["sql", "rdbms", "postgres", "sqlite", "indexing", "transactions"]
         }
       }
     },
