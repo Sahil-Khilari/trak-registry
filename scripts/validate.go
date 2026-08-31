@@ -53,8 +53,9 @@ func main() {
 			return nil
 		}
 
-		// Normalize path to forward slashes
+		// Normalize path to forward slashes and trim leading ./
 		normalizedPath := filepath.ToSlash(path)
+		normalizedPath = strings.TrimPrefix(normalizedPath, "./")
 
 		// Only check .json files inside templates/ or users/
 		if !strings.HasSuffix(normalizedPath, ".json") {
