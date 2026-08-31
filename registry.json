@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0.0",
-  "updated_at": "2026-08-30T12:00:00Z",
+  "schema_version": "1.1.0",
+  "updated_at": "2026-08-31T12:00:00Z",
   "categories": {
     "lang": {
       "title": "Programming Languages",
