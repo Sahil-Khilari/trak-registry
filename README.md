@@ -5,14 +5,14 @@
 <h1 align="center">Trak Registry</h1>
 
 <p align="center">
-  <strong>The Decentralized Curriculum Catalog & Blueprint Index for Trak CLI</strong>
+  <strong>Decoupled GitOps Curriculum Catalog & Blueprint Engine for Trak CLI</strong>
 </p>
 
 <p align="center">
-  <a href="registry.json"><img src="https://img.shields.io/badge/Schema-v1.0.0-blue?style=flat-square" alt="Schema Version" /></a>
-  <a href="templates/"><img src="https://img.shields.io/badge/Catalog-19%20Tracks%20(350%2B%20Modules)-emerald?style=flat-square" alt="Blueprints" /></a>
-  <a href="https://github.com/ndk123-web/trak"><img src="https://img.shields.io/badge/CLI-v1.0.0-00ADD8?style=flat-square&logo=go" alt="CLI" /></a>
-  <a href="https://github.com/ndk123-web/trak-web"><img src="https://img.shields.io/badge/Web-Live-cyan?style=flat-square" alt="Web App" /></a>
+  <a href="registry.json"><img src="https://img.shields.io/badge/Schema-v1.1.0-blue?style=flat-square" alt="Schema Version" /></a>
+  <a href="templates/"><img src="https://img.shields.io/badge/Official-19%20Tracks%20(350%2B%20Modules)-emerald?style=flat-square" alt="Official Tracks" /></a>
+  <a href="users/"><img src="https://img.shields.io/badge/Community-GitOps%20Namespaces-cyan?style=flat-square" alt="Community Namespaces" /></a>
+  <a href="https://github.com/ndk123-web/trak"><img src="https://img.shields.io/badge/CLI-v1.1.0-00ADD8?style=flat-square&logo=go" alt="CLI" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License" /></a>
 </p>
 
@@ -20,61 +20,174 @@
 
 ## ⚡ Overview
 
-**Trak Registry** is the central, open-source curriculum index for the [Trak CLI](https://github.com/ndk123-web/trak) ecosystem. It hosts declarative JSON abstract syntax trees (AST) that define multi-module workspaces, source code, build configs, and hands-on cheatsheets.
+**Trak Registry** is the central, open-source curriculum repository for the [Trak CLI](https://github.com/ndk123-web/trak) ecosystem. It hosts declarative Abstract Syntax Tree (AST) blueprints that define comprehensive, multi-module learning environments with real source code, build configs, and hands-on exercises.
 
-By decoupling the template blueprints from the CLI binary, new learning tracks, updates, and community contributions are **streamed instantly** to users without requiring CLI recompilation or reinstallation.
+By decoupling curriculum blueprints from the CLI binary, new learning tracks and community updates are **streamed instantly** to users globally without requiring CLI recompilation, database migrations, or server maintenance.
 
 ---
 
-## 🎬 Demo (v1.0.0)
+## 🎬 Demo
 
 <p align="center">
   <video src="https://github.com/user-attachments/assets/4210baaf-ef0d-469b-9a8a-f0e244d9b9a3" controls="controls" width="100%" style="max-width: 900px; border-radius: 12px;"></video>
 </p>
 
-https://github.com/user-attachments/assets/4210baaf-ef0d-469b-9a8a-f0e244d9b9a3
-
 ---
 
-## 🗂️ Registry Architecture
+## 🗂️ 2-Tier Registry Hierarchy
+
+Trak Registry separates verified core curricula from decentralized community tracks using two clear filesystem tiers:
 
 ```text
 trak-registry/
-├── registry.json                 # Master catalog index and metadata registry
-└── templates/                    # Hierarchical blueprint directory
-    ├── lang/                     # 📦 Programming Languages
-    │   ├── go.json
-    │   ├── rust.json
-    │   ├── typescript.json
-    │   ├── python.json
-    │   ├── javascript.json
-    │   ├── java.json
-    │   ├── cpp.json
-    │   └── c.json
-    ├── os/                       # 🐧 Operating Systems & Kernels
-    │   ├── linux.json
-    │   ├── macos.json
-    │   └── windows.json
-    ├── cloud/                    # ☁️ Cloud Platforms
-    │   └── aws.json
-    ├── db/                       # 🗄️ Databases & Storage
-    │   ├── postgres.json
-    │   ├── redis.json
-    │   └── sql.json
-    └── tool/                     # 🛠️ DevOps & Developer Tools
-        ├── docker.json
-        ├── k8s.json
-        ├── terraform.json
-        ├── ansible.json
-        ├── git.json
-        └── jenkins.json
+├── registry.json                 # Master catalog index for official tracks
+├── templates/                    # 📦 Tier 1: Official Verified Curriculums (Maintained by Core Team)
+│   ├── lang/                     # Programming Languages (go, rust, python, typescript...)
+│   ├── os/                       # Operating Systems (linux, macos, windows)
+│   ├── cloud/                    # Cloud Platforms (aws)
+│   ├── db/                       # Databases & Storage (postgres, redis, sql)
+│   └── tool/                     # DevOps Tools (docker, k8s, terraform, git, jenkins, ansible)
+│
+└── users/                        # 🌐 Tier 2: Community GitOps Blueprints (Open to All Creators)
+    ├── [github-username-1]/      # Isolated Creator Namespace (e.g. ndk123-web/)
+    │   └── lang/
+    │       └── go.json
+    └── [github-username-2]/
+        └── db/
+            └── postgres.json
 ```
 
 ---
 
-## 📚 Master Blueprint Matrix (19 Tracks)
+## 🔄 End-to-End GitOps Contribution & Verification Flow
 
-| Category | Identifier | Name | Modules | Version | Raw Endpoint |
+Publishing custom learning tracks to Trak Registry requires **zero custom accounts, zero passwords, and zero API keys**. The entire lifecycle is governed by automated GitOps and GitHub Actions CI:
+
+```mermaid
+flowchart TD
+    A["1. Creator: Design Blueprint in Studio"] -->|"Export AST JSON"| B["2. Fork trak-registry on GitHub"]
+    
+    B -->|"Save file to users/:username/:category/:tool.json"| C["3. Submit Pull Request (PR)"]
+    
+    C --> D["4. GitHub Actions CI Trigger: validate.yml"]
+    
+    subgraph CI_Checks ["Automated CI AST & Security Validator (scripts/validate.go)"]
+        E1["1. Actor Isolation: GITHUB_ACTOR == folderUsername"]
+        E2["2. File Size Limit: Max 5MB per JSON blueprint"]
+        E3["3. Category Taxonomy: lang, os, cloud, db, tool"]
+        E4["4. AST Structure: root.type == directory & non-empty children"]
+        E5["5. Path Traversal Guard: Reject .., /, :, null bytes in names"]
+        E6["6. Security Check: Reject .exe, .dll, .so, .dylib binaries"]
+    end
+    
+    D --> CI_Checks
+    
+    CI_Checks -->|"Any Check Fails"| F["❌ PR Rejected with Detailed Security/Schema Error"]
+    CI_Checks -->|"All Checks Pass"| G["✔ PR Approved & Merged to main"]
+    
+    G --> H["5. Instantly Available Worldwide!"]
+    H --> I["Developer Runs: trak init :username/:category/:tool"]
+```
+
+---
+
+## 🛡️ Comprehensive Validator Rules (`scripts/validate.go`)
+
+Every blueprint submitted via Pull Request is strictly validated across 6 automated checks before merging:
+
+| Rule | Enforcement | Details |
+| :--- | :--- | :--- |
+| **1. Actor Isolation** | Mandatory | In PRs, `GITHUB_ACTOR` must match the parent folder in `users/<username>/`. No contributor can touch another creator's namespace or `templates/`. |
+| **2. Max File Size (5MB)** | `< 5,242,880 bytes` | Blueprint JSON files cannot exceed 5MB to ensure fast HTTPS downloads over CLI. |
+| **3. Category Taxonomy** | Strict Enum | Must reside under one of the 5 valid categories: `lang`, `os`, `cloud`, `db`, `tool`. |
+| **4. Metadata Schema** | Mandatory Fields | `id`, `name`, `version`, and `root` directory object must be present and non-empty. |
+| **5. Path Traversal Safety** | Security Sanitization | Node names cannot contain `/`, `\`, `:`, null bytes, `.`, or `..` to prevent filesystem escapes. |
+| **6. Binary Prohibition** | Security Shield | Rejects compiled executable extensions (`.exe`, `.dll`, `.so`, `.dylib`, `.bin`) inside templates. |
+
+---
+
+## 🛠️ Step-by-Step Community Publishing Guide
+
+### Step 1: Design in Blueprint Studio
+Instead of writing hundreds of lines of nested JSON manually with escaped newlines and quotes, use **Blueprint Studio** directly in your browser:
+1. Open [Blueprint Studio](https://trak-web.vercel.app/studio) (or run `trak-web` locally).
+2. Scaffold your directories, add starter files, and write code in Monaco Editor.
+3. Click **"Download AST JSON"** to export your valid template.
+
+### Step 2: Fork the Repository
+Fork [`github.com/ndk123-web/trak-registry`](https://github.com/ndk123-web/trak-registry) to your own GitHub account.
+
+### Step 3: Place in Your Isolated User Namespace
+Create your blueprint file using the exact directory structure:
+```text
+users/<your-github-username>/<category>/<tool>.json
+```
+
+> **Allowed Categories:** `lang` (languages), `os` (operating systems), `cloud` (cloud infra), `db` (databases), `tool` (DevOps tools).
+
+### Step 4: Submit Pull Request (PR)
+1. Push your branch and open a PR against `main`.
+2. GitHub Actions will automatically run `go run scripts/validate.go`.
+3. Once merged, anyone across the globe can immediately run:
+   ```bash
+   trak init <your-github-username>/<category>/<tool>
+   ```
+
+---
+
+## 📄 Blueprint AST Schema Specification
+
+Every blueprint JSON file represents a recursive Abstract Syntax Tree (AST) defining the materialized workspace:
+
+```json
+{
+  "id": "lang/go",
+  "name": "Go (Golang) Comprehensive Mastery Track",
+  "version": "1.2.0",
+  "description": "Complete Go curriculum from fundamentals to production concurrency",
+  "root": {
+    "name": "go-workspace",
+    "type": "directory",
+    "children": [
+      {
+        "name": "go.mod",
+        "type": "file",
+        "content": "module learn-go\n\ngo 1.22\n"
+      },
+      {
+        "name": "00-setup-and-prerequisites",
+        "type": "directory",
+        "children": [
+          {
+            "name": "README.md",
+            "type": "file",
+            "content": "# 00 - Setup & Toolchain\n\n## 🎯 Learning Objectives\n..."
+          },
+          {
+            "name": "main.go",
+            "type": "file",
+            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello, Trak!\")\n}\n"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Node Schema Fields:
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `name` | `string` | File or directory name (e.g. `main.go`, `01-basics`). Cannot contain path traversal characters. |
+| `type` | `string` | Node type: `"directory"` or `"file"`. |
+| `content` | `string` | *(Files only)* Raw UTF-8 string content with escaped newlines. |
+| `children` | `array[Node]` | *(Directories only)* Nested list of child file and directory nodes. |
+
+---
+
+## 📚 Master Blueprint Matrix (19 Official Tracks)
+
+| Category | Identifier | Name | Modules | Version | Source File |
 | :--- | :--- | :--- | :---: | :---: | :--- |
 | **`lang/`** | `lang/go` | Go (Golang) | 20 | `1.2.0` | [`templates/lang/go.json`](templates/lang/go.json) |
 | **`lang/`** | `lang/rust` | Rust Systems | 22 | `1.0.0` | [`templates/lang/rust.json`](templates/lang/rust.json) |
@@ -100,111 +213,20 @@ trak-registry/
 
 ---
 
-## 📄 Schema Contracts
+## 🧪 Local Schema Validation
 
-### 1. `registry.json` (Catalog Index)
-Provides categorized metadata and references to individual template endpoints.
+You can run the official registry validator locally before opening a PR:
 
-```json
-{
-  "schema_version": "1.0.0",
-  "updated_at": "2026-08-30T15:30:00Z",
-  "categories": {
-    "lang": {
-      "title": "Programming Languages",
-      "description": "Interactive learning workspaces for programming languages",
-      "templates": {
-        "go": {
-          "name": "Go (Golang)",
-          "description": "Comprehensive Go fundamentals, concurrency, channels, and microservices",
-          "version": "1.2.0",
-          "source": "templates/lang/go.json",
-          "tags": ["golang", "concurrency", "backend", "goroutines"]
-        }
-      }
-    }
-  }
-}
+```bash
+# From trak-registry repository root
+go run scripts/validate.go
 ```
-
----
-
-### 2. `templates/<category>/<tool>.json` (Blueprint AST Node Tree)
-Defines the recursive directory and file hierarchy materialized on the user's filesystem.
-
-```json
-{
-  "id": "lang/go",
-  "name": "Go",
-  "version": "1.2.0",
-  "description": "Go concurrency and backend architecture",
-  "root": {
-    "name": "go-workspace",
-    "type": "directory",
-    "children": [
-      {
-        "name": "go.mod",
-        "type": "file",
-        "content": "module learn-go\n\ngo 1.22\n"
-      },
-      {
-        "name": "00-setup",
-        "type": "directory",
-        "children": [
-          {
-            "name": "main.go",
-            "type": "file",
-            "content": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Hello Trak!\")\n}\n"
-          },
-          {
-            "name": "README.md",
-            "type": "file",
-            "content": "# Module 00: Environment Setup\n"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
----
-
-## 🛠️ How to Contribute a Blueprint
-
-1. **Fork** this repository: `https://github.com/ndk123-web/trak-registry`
-2. **Create a blueprint JSON file** under `templates/<category>/<tool>.json`:
-   - Follow the 5 taxonomy rules:
-     - `lang/` for programming languages
-     - `os/` for operating systems
-     - `cloud/` for cloud platforms
-     - `db/` for databases
-     - `tool/` for DevOps tools
-3. **Register your blueprint** inside `registry.json`.
-4. **Test locally** with Trak CLI:
-   ```bash
-   trak init <category>/<tool> --path ./test-workspace
-   ```
-5. **Open a Pull Request**!
-
----
-
-## 🔗 Live Raw Streaming URLs
-
-- **Master Catalog Index**:
-  `https://raw.githubusercontent.com/ndk123-web/trak-registry/main/registry.json`
-- **Go Blueprint**:
-  `https://raw.githubusercontent.com/ndk123-web/trak-registry/main/templates/lang/go.json`
-- **Kubernetes Blueprint**:
-  `https://raw.githubusercontent.com/ndk123-web/trak-registry/main/templates/tool/k8s.json`
-- **PostgreSQL Blueprint**:
-  `https://raw.githubusercontent.com/ndk123-web/trak-registry/main/templates/db/postgres.json`
 
 ---
 
 ## 📜 Ecosystem & License
 
 - ⚡ **[Trak CLI](https://github.com/ndk123-web/trak)** — The official Go binary workspace generator.
-- 🌐 **[Trak Web](https://github.com/ndk123-web/trak-web)** — The interactive web portal and documentation app.
+- 🌐 **[Trak Web](https://github.com/ndk123-web/trak-web)** — The interactive web portal and Blueprint Studio.
 
 This project is licensed under the **MIT License**.
