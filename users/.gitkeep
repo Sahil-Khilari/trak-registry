@@ -1,0 +1,3 @@
+# Trak Community Tracks
+# Structure: users/<github-username>/<category>/<track-slug>.json
+# Example: users/vishal/lang/go.json -> `trak init vishal/lang/go`
