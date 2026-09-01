@@ -41,52 +41,91 @@ func main() {
 	fmt.Println("=======================================================")
 	fmt.Println()
 
-	changedFiles := getChangedFiles()
-	eventName := strings.TrimSpace(os.Getenv("GITHUB_EVENT_NAME"))
 	actor := strings.TrimSpace(os.Getenv("GITHUB_ACTOR"))
 	repoOwner := strings.TrimSpace(os.Getenv("REPO_OWNER"))
+	eventName := strings.TrimSpace(os.Getenv("GITHUB_EVENT_NAME"))
 
-	if eventName == "pull_request" {
+	// --------------------------------------------------------------------
+	// STEP 1 & 2: PR Author & Git Diff Target Namespace Verification
+	// --------------------------------------------------------------------
+	if eventName == "pull_request" && actor != "" {
+		isRepoOwner := repoOwner != "" && strings.EqualFold(actor, repoOwner)
+
 		fmt.Printf("📋 PR Event Detected | Author: @%s | Target Repo Owner: @%s\n", actor, repoOwner)
-		if len(changedFiles) > 0 {
-			fmt.Printf("   Detected %d changed file(s) in this PR.\n", len(changedFiles))
-		}
-		fmt.Println()
 
-		// If PR author is not repo owner, prevent tampering with scripts/ or .github/
-		if actor != "" && repoOwner != "" && !strings.EqualFold(actor, repoOwner) {
-			for file := range changedFiles {
-				if strings.HasPrefix(file, "scripts/") || strings.HasPrefix(file, ".github/") {
-					fmt.Printf("❌ Security Violation: PR author '@%s' cannot modify CI workflows or validation scripts ('%s')\n", actor, file)
+		changedFiles := getChangedFiles()
+		if len(changedFiles) > 0 {
+			fmt.Printf("🔍 Detected %d changed file(s) in this PR:\n", len(changedFiles))
+			for _, file := range changedFiles {
+				fmt.Printf("   - %s\n", file)
+			}
+			fmt.Println()
+		}
+
+		if !isRepoOwner {
+			// External contributor security checks on changed files
+			for _, file := range changedFiles {
+				normalizedFile := filepath.ToSlash(strings.TrimPrefix(file, "./"))
+
+				// Rule A: Contributor cannot touch scripts/ or .github/ workflows
+				if strings.HasPrefix(normalizedFile, "scripts/") || strings.HasPrefix(normalizedFile, ".github/") {
+					fmt.Printf("❌ Security Violation: PR author '@%s' cannot modify CI workflows or scripts ('%s')\n", actor, normalizedFile)
+					os.Exit(1)
+				}
+
+				// Rule B: Contributor cannot modify official templates/
+				if strings.HasPrefix(normalizedFile, "templates/") {
+					fmt.Printf("❌ Security Violation: PR author '@%s' cannot modify official templates/. Please submit under 'users/%s/<category>/<track>.json'\n", actor, actor)
+					os.Exit(1)
+				}
+
+				// Rule C: Contributor MUST only modify files under users/<actor>/<category>/<slug>.json
+				if strings.HasPrefix(normalizedFile, "users/") {
+					parts := strings.Split(normalizedFile, "/")
+					if len(parts) != 4 || !strings.HasSuffix(parts[3], ".json") {
+						fmt.Printf("❌ Path Error: Community file '%s' must match 'users/%s/<category>/<track>.json'\n", normalizedFile, actor)
+						os.Exit(1)
+					}
+					folderUser := parts[1]
+					category := parts[2]
+
+					if !strings.EqualFold(folderUser, actor) {
+						fmt.Printf("❌ Security Violation: PR author '@%s' cannot modify namespace of another user 'users/%s/'\n", actor, folderUser)
+						os.Exit(1)
+					}
+					if !validCategories[category] {
+						fmt.Printf("❌ Invalid Category: '%s' is not allowed. Must be one of: lang, os, cloud, db, tool\n", category)
+						os.Exit(1)
+					}
+				} else {
+					// Touched root files or unknown paths
+					fmt.Printf("❌ Security Violation: PR author '@%s' cannot modify root repository files ('%s')\n", actor, normalizedFile)
 					os.Exit(1)
 				}
 			}
 		}
 	}
 
+	// --------------------------------------------------------------------
+	// STEP 3: Schema & AST Validation across all blueprints
+	// --------------------------------------------------------------------
 	errorsCount := 0
 	filesCount := 0
 
-	// Walk through templates/ and users/ directories
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-
 		if info.IsDir() {
 			return nil
 		}
 
-		// Normalize path to forward slashes and trim leading ./
 		normalizedPath := filepath.ToSlash(path)
 		normalizedPath = strings.TrimPrefix(normalizedPath, "./")
 
-		// Only check .json files inside templates/ or users/
 		if !strings.HasSuffix(normalizedPath, ".json") {
 			return nil
 		}
-
-		// Skip top-level config files
 		if normalizedPath == "registry.json" || normalizedPath == "package.json" {
 			return nil
 		}
@@ -101,7 +140,7 @@ func main() {
 		filesCount++
 		fmt.Printf("🔍 [%s] Checking: %-45s ", formatType(isOfficial), normalizedPath)
 
-		if err := validateFile(normalizedPath, isOfficial, changedFiles); err != nil {
+		if err := validateBlueprintFile(normalizedPath, isOfficial); err != nil {
 			fmt.Printf("❌ FAILED\n   Error: %v\n", err)
 			errorsCount++
 		} else {
@@ -128,51 +167,49 @@ func main() {
 	fmt.Println("=======================================================")
 }
 
-func getChangedFiles() map[string]bool {
-	changed := make(map[string]bool)
+func getChangedFiles() []string {
+	var changed []string
 
-	// 1. Check if CHANGED_FILES env var is populated by CI
-	if envList := os.Getenv("CHANGED_FILES"); envList != "" {
+	// 1. Check CHANGED_FILES env var from GitHub Actions
+	if envList := strings.TrimSpace(os.Getenv("CHANGED_FILES")); envList != "" {
 		for _, f := range strings.Split(envList, "\n") {
 			f = strings.TrimSpace(filepath.ToSlash(f))
 			f = strings.TrimPrefix(f, "./")
 			if f != "" {
-				changed[f] = true
+				changed = append(changed, f)
 			}
 		}
 		return changed
 	}
 
-	// 2. If running under pull_request event, attempt to use git diff
-	if os.Getenv("GITHUB_EVENT_NAME") == "pull_request" {
-		baseRef := os.Getenv("GITHUB_BASE_REF")
-		if baseRef == "" {
-			baseRef = "main"
-		}
-		// Try git diff --name-only origin/<baseRef>...HEAD
-		out, err := exec.Command("git", "diff", "--name-only", "origin/"+baseRef+"...HEAD").Output()
-		if err == nil && len(out) > 0 {
-			for _, line := range strings.Split(string(out), "\n") {
-				f := strings.TrimSpace(filepath.ToSlash(line))
-				f = strings.TrimPrefix(f, "./")
-				if f != "" {
-					changed[f] = true
-				}
+	// 2. Try git diff commands
+	baseRef := os.Getenv("GITHUB_BASE_REF")
+	if baseRef == "" {
+		baseRef = "main"
+	}
+	out, err := exec.Command("git", "diff", "--name-only", "origin/"+baseRef+"...HEAD").Output()
+	if err == nil && len(out) > 0 {
+		for _, line := range strings.Split(string(out), "\n") {
+			f := strings.TrimSpace(filepath.ToSlash(line))
+			f = strings.TrimPrefix(f, "./")
+			if f != "" {
+				changed = append(changed, f)
 			}
-			return changed
 		}
-		// Fallback: git diff --name-only HEAD~1
-		out, err = exec.Command("git", "diff", "--name-only", "HEAD~1").Output()
-		if err == nil && len(out) > 0 {
-			for _, line := range strings.Split(string(out), "\n") {
-				f := strings.TrimSpace(filepath.ToSlash(line))
-				f = strings.TrimPrefix(f, "./")
-				if f != "" {
-					changed[f] = true
-				}
+		return changed
+	}
+
+	// Fallback: git diff HEAD~1
+	out, err = exec.Command("git", "diff", "--name-only", "HEAD~1").Output()
+	if err == nil && len(out) > 0 {
+		for _, line := range strings.Split(string(out), "\n") {
+			f := strings.TrimSpace(filepath.ToSlash(line))
+			f = strings.TrimPrefix(f, "./")
+			if f != "" {
+				changed = append(changed, f)
 			}
-			return changed
 		}
+		return changed
 	}
 
 	return changed
@@ -185,18 +222,7 @@ func formatType(isOfficial bool) string {
 	return "COMMUNITY"
 }
 
-func validateFile(filePath string, isOfficial bool, changedFiles map[string]bool) error {
-	eventName := strings.TrimSpace(os.Getenv("GITHUB_EVENT_NAME"))
-	actor := strings.TrimSpace(os.Getenv("GITHUB_ACTOR"))
-	repoOwner := strings.TrimSpace(os.Getenv("REPO_OWNER"))
-
-	// In a pull request, only files that were ACTUALLY modified/added in this PR
-	// are subject to author ownership / security verification.
-	isChangedInPR := true
-	if eventName == "pull_request" && len(changedFiles) > 0 {
-		isChangedInPR = changedFiles[filePath]
-	}
-
+func validateBlueprintFile(filePath string, isOfficial bool) error {
 	// 1. Path structure verification
 	parts := strings.Split(filePath, "/")
 	if isOfficial {
@@ -208,29 +234,14 @@ func validateFile(filePath string, isOfficial bool, changedFiles map[string]bool
 		if !validCategories[category] {
 			return fmt.Errorf("invalid category '%s'. Must be one of: lang, os, cloud, db, tool", category)
 		}
-
-		// Security Check for Official templates in PRs (only if PR changed/added this file)
-		if eventName == "pull_request" && isChangedInPR && actor != "" && repoOwner != "" {
-			if !strings.EqualFold(actor, repoOwner) {
-				return fmt.Errorf("security violation: PR author '@%s' cannot modify official templates/. Please submit your curriculum under 'users/%s/'", actor, actor)
-			}
-		}
 	} else {
 		// Expect: users/<username>/<category>/<slug>.json (4 parts)
 		if len(parts) != 4 {
 			return fmt.Errorf("community template path must be 'users/<username>/<category>/<slug>.json', got '%s'", filePath)
 		}
-		folderUser := parts[1]
 		category := parts[2]
 		if !validCategories[category] {
 			return fmt.Errorf("invalid category '%s'. Must be one of: lang, os, cloud, db, tool", category)
-		}
-
-		// Security Check: PR Author authorization (only if PR changed/added this file)
-		if eventName == "pull_request" && isChangedInPR && actor != "" {
-			if !strings.EqualFold(folderUser, actor) && (repoOwner == "" || !strings.EqualFold(actor, repoOwner)) {
-				return fmt.Errorf("security violation: PR author '@%s' cannot modify namespace 'users/%s/'. You can only add/edit templates under 'users/%s/'", actor, folderUser, actor)
-			}
 		}
 	}
 
