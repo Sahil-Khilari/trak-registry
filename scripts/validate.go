@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -39,6 +40,29 @@ func main() {
 	fmt.Println("  🔍 Trak Registry - Blueprint AST Schema Validator")
 	fmt.Println("=======================================================")
 	fmt.Println()
+
+	changedFiles := getChangedFiles()
+	eventName := strings.TrimSpace(os.Getenv("GITHUB_EVENT_NAME"))
+	actor := strings.TrimSpace(os.Getenv("GITHUB_ACTOR"))
+	repoOwner := strings.TrimSpace(os.Getenv("REPO_OWNER"))
+
+	if eventName == "pull_request" {
+		fmt.Printf("📋 PR Event Detected | Author: @%s | Target Repo Owner: @%s\n", actor, repoOwner)
+		if len(changedFiles) > 0 {
+			fmt.Printf("   Detected %d changed file(s) in this PR.\n", len(changedFiles))
+		}
+		fmt.Println()
+
+		// If PR author is not repo owner, prevent tampering with scripts/ or .github/
+		if actor != "" && repoOwner != "" && !strings.EqualFold(actor, repoOwner) {
+			for file := range changedFiles {
+				if strings.HasPrefix(file, "scripts/") || strings.HasPrefix(file, ".github/") {
+					fmt.Printf("❌ Security Violation: PR author '@%s' cannot modify CI workflows or validation scripts ('%s')\n", actor, file)
+					os.Exit(1)
+				}
+			}
+		}
+	}
 
 	errorsCount := 0
 	filesCount := 0
@@ -77,7 +101,7 @@ func main() {
 		filesCount++
 		fmt.Printf("🔍 [%s] Checking: %-45s ", formatType(isOfficial), normalizedPath)
 
-		if err := validateFile(normalizedPath, isOfficial); err != nil {
+		if err := validateFile(normalizedPath, isOfficial, changedFiles); err != nil {
 			fmt.Printf("❌ FAILED\n   Error: %v\n", err)
 			errorsCount++
 		} else {
@@ -104,6 +128,56 @@ func main() {
 	fmt.Println("=======================================================")
 }
 
+func getChangedFiles() map[string]bool {
+	changed := make(map[string]bool)
+
+	// 1. Check if CHANGED_FILES env var is populated by CI
+	if envList := os.Getenv("CHANGED_FILES"); envList != "" {
+		for _, f := range strings.Split(envList, "\n") {
+			f = strings.TrimSpace(filepath.ToSlash(f))
+			f = strings.TrimPrefix(f, "./")
+			if f != "" {
+				changed[f] = true
+			}
+		}
+		return changed
+	}
+
+	// 2. If running under pull_request event, attempt to use git diff
+	if os.Getenv("GITHUB_EVENT_NAME") == "pull_request" {
+		baseRef := os.Getenv("GITHUB_BASE_REF")
+		if baseRef == "" {
+			baseRef = "main"
+		}
+		// Try git diff --name-only origin/<baseRef>...HEAD
+		out, err := exec.Command("git", "diff", "--name-only", "origin/"+baseRef+"...HEAD").Output()
+		if err == nil && len(out) > 0 {
+			for _, line := range strings.Split(string(out), "\n") {
+				f := strings.TrimSpace(filepath.ToSlash(line))
+				f = strings.TrimPrefix(f, "./")
+				if f != "" {
+					changed[f] = true
+				}
+			}
+			return changed
+		}
+		// Fallback: git diff --name-only HEAD~1
+		out, err = exec.Command("git", "diff", "--name-only", "HEAD~1").Output()
+		if err == nil && len(out) > 0 {
+			for _, line := range strings.Split(string(out), "\n") {
+				f := strings.TrimSpace(filepath.ToSlash(line))
+				f = strings.TrimPrefix(f, "./")
+				if f != "" {
+					changed[f] = true
+				}
+			}
+			return changed
+		}
+	}
+
+	return changed
+}
+
 func formatType(isOfficial bool) string {
 	if isOfficial {
 		return "OFFICIAL"
@@ -111,7 +185,18 @@ func formatType(isOfficial bool) string {
 	return "COMMUNITY"
 }
 
-func validateFile(filePath string, isOfficial bool) error {
+func validateFile(filePath string, isOfficial bool, changedFiles map[string]bool) error {
+	eventName := strings.TrimSpace(os.Getenv("GITHUB_EVENT_NAME"))
+	actor := strings.TrimSpace(os.Getenv("GITHUB_ACTOR"))
+	repoOwner := strings.TrimSpace(os.Getenv("REPO_OWNER"))
+
+	// In a pull request, only files that were ACTUALLY modified/added in this PR
+	// are subject to author ownership / security verification.
+	isChangedInPR := true
+	if eventName == "pull_request" && len(changedFiles) > 0 {
+		isChangedInPR = changedFiles[filePath]
+	}
+
 	// 1. Path structure verification
 	parts := strings.Split(filePath, "/")
 	if isOfficial {
@@ -122,6 +207,13 @@ func validateFile(filePath string, isOfficial bool) error {
 		category := parts[1]
 		if !validCategories[category] {
 			return fmt.Errorf("invalid category '%s'. Must be one of: lang, os, cloud, db, tool", category)
+		}
+
+		// Security Check for Official templates in PRs (only if PR changed/added this file)
+		if eventName == "pull_request" && isChangedInPR && actor != "" && repoOwner != "" {
+			if !strings.EqualFold(actor, repoOwner) {
+				return fmt.Errorf("security violation: PR author '@%s' cannot modify official templates/. Please submit your curriculum under 'users/%s/'", actor, actor)
+			}
 		}
 	} else {
 		// Expect: users/<username>/<category>/<slug>.json (4 parts)
@@ -134,27 +226,10 @@ func validateFile(filePath string, isOfficial bool) error {
 			return fmt.Errorf("invalid category '%s'. Must be one of: lang, os, cloud, db, tool", category)
 		}
 
-		// Security Check: PR Author authorization
-		actor := strings.TrimSpace(os.Getenv("GITHUB_ACTOR"))
-		repoOwner := strings.TrimSpace(os.Getenv("REPO_OWNER"))
-		eventName := strings.TrimSpace(os.Getenv("GITHUB_EVENT_NAME"))
-
-		if eventName == "pull_request" && actor != "" {
+		// Security Check: PR Author authorization (only if PR changed/added this file)
+		if eventName == "pull_request" && isChangedInPR && actor != "" {
 			if !strings.EqualFold(folderUser, actor) && (repoOwner == "" || !strings.EqualFold(actor, repoOwner)) {
 				return fmt.Errorf("security violation: PR author '@%s' cannot modify namespace 'users/%s/'. You can only add/edit templates under 'users/%s/'", actor, folderUser, actor)
-			}
-		}
-	}
-
-	// Security Check for Official templates in PRs
-	if isOfficial {
-		actor := strings.TrimSpace(os.Getenv("GITHUB_ACTOR"))
-		repoOwner := strings.TrimSpace(os.Getenv("REPO_OWNER"))
-		eventName := strings.TrimSpace(os.Getenv("GITHUB_EVENT_NAME"))
-
-		if eventName == "pull_request" && actor != "" && repoOwner != "" {
-			if !strings.EqualFold(actor, repoOwner) {
-				return fmt.Errorf("security violation: PR author '@%s' cannot modify official templates/. Please submit your curriculum under 'users/%s/'", actor, actor)
 			}
 		}
 	}
